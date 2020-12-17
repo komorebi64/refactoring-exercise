@@ -172,11 +172,18 @@ public class FundingRaised {
 
     public static void main(String[] args) {
         try {
-            Map<String, String> options = new HashMap<String, String> ();
-            options.put("company_name", "Facebook");
-            options.put("round", "a");
-            System.out.print(FundingRaised.where(options).size());
+            Map<String, String> whereOptions = new HashMap<String, String> ();
+            whereOptions.put("company_name", "Facebook");
+            whereOptions.put("round", "a");
+            System.out.println(FundingRaised.where(whereOptions).size());
+
+            Map<String, String> findOptions = new HashMap<String, String> ();
+            findOptions.put("company_name", "Facebook");
+            System.out.println(FundingRaised.findBy(findOptions));
         } catch(IOException e) {
+            System.out.print(e.getMessage());
+            System.out.print("error");
+        } catch (NoSuchEntryException e) {
             System.out.print(e.getMessage());
             System.out.print("error");
         }
