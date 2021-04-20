@@ -1,193 +1,51 @@
 package com.checkr.interviews;
 
 import java.util.*;
+
+import com.checkr.interviews.entity.FundingRecord;
+import com.checkr.interviews.exception.NoSuchEntryException;
 import com.opencsv.CSVReader;
+
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class FundingRaised {
+
+    public static List<Map<String, String>> where(FundingRecord options) throws IOException {
+        List<FundingRecord> csvData = readCsv();
+
+        return csvData.stream()
+                .filter(data -> data.filter(options))
+                .map(FundingRecord::toMap)
+                .collect(Collectors.toList());
+    }
+
     public static List<Map<String, String>> where(Map<String, String> options) throws IOException {
-        List<String[]> csvData = new ArrayList<String[]>();
-        CSVReader reader = new CSVReader(new FileReader("startup_funding.csv"));
-        String[] row = null;
-
-        while((row = reader.readNext()) != null) {
-            csvData.add(row);
-        }
-
-        reader.close();
-        csvData.remove(0);
-
-        if(options.containsKey("company_name")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[1].equals(options.get("company_name"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        if(options.containsKey("city")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[4].equals(options.get("city"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        if(options.containsKey("state")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[5].equals(options.get("state"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        if(options.containsKey("round")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[9].equals(options.get("round"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        List<Map<String, String>> output = new ArrayList<Map<String, String>>();
-
-        for(int i = 0; i < csvData.size(); i++) {
-            Map<String, String> mapped = new HashMap<String, String> ();
-            mapped.put("permalink", csvData.get(i)[0]);
-            mapped.put("company_name", csvData.get(i)[1]);
-            mapped.put("number_employees", csvData.get(i)[2]);
-            mapped.put("category", csvData.get(i)[3]);
-            mapped.put("city", csvData.get(i)[4]);
-            mapped.put("state", csvData.get(i)[5]);
-            mapped.put("funded_date", csvData.get(i)[6]);
-            mapped.put("raised_amount", csvData.get(i)[7]);
-            mapped.put("raised_currency", csvData.get(i)[8]);
-            mapped.put("round", csvData.get(i)[9]);
-            output.add(mapped);
-        }
-
-        return output;
+        return where(new FundingRecord(options));
     }
 
     public static Map<String, String> findBy(Map<String, String> options) throws IOException, NoSuchEntryException {
-        List<String[]> csvData = new ArrayList<String[]>();
-        CSVReader reader = new CSVReader(new FileReader("startup_funding.csv"));
-        String[] row = null;
+        List<Map<String, String>> list = where(new FundingRecord(options));
+        if (list.isEmpty()) {
+            throw new NoSuchEntryException();
+        }
 
-        while((row = reader.readNext()) != null) {
-            csvData.add(row);
+        return list.get(0);
+    }
+
+    private static List<FundingRecord> readCsv() throws IOException {
+        List<FundingRecord> csvData = new ArrayList<>();
+        CSVReader reader = new CSVReader(new FileReader("startup_funding.csv"));
+        String[] row;
+
+        while ((row = reader.readNext()) != null) {
+            csvData.add(new FundingRecord(row));
         }
 
         reader.close();
         csvData.remove(0);
-        Map<String, String> mapped = new HashMap<String, String> ();
-
-        for(int i = 0; i < csvData.size(); i++) {
-            if(options.containsKey("company_name")) {
-                if(csvData.get(i)[1].equals(options.get("company_name"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            if(options.containsKey("city")) {
-                if(csvData.get(i)[4].equals(options.get("city"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            if(options.containsKey("state")) {
-                if(csvData.get(i)[5].equals(options.get("state"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            if(options.containsKey("round")) {
-                if(csvData.get(i)[9].equals(options.get("round"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            return mapped;
-        }
-
-        throw new NoSuchEntryException();
+        return csvData;
     }
 
-    public static void main(String[] args) {
-        try {
-            Map<String, String> whereOptions = new HashMap<String, String> ();
-            whereOptions.put("company_name", "Facebook");
-            whereOptions.put("round", "a");
-            System.out.println(FundingRaised.where(whereOptions).size());
-
-            Map<String, String> findOptions = new HashMap<String, String> ();
-            findOptions.put("company_name", "Facebook");
-            System.out.println(FundingRaised.findBy(findOptions));
-        } catch(IOException e) {
-            System.out.print(e.getMessage());
-            System.out.print("error");
-        } catch (NoSuchEntryException e) {
-            System.out.print(e.getMessage());
-            System.out.print("error");
-        }
-    }
 }
-
-class NoSuchEntryException extends Exception {}
